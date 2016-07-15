@@ -67,8 +67,25 @@ class AccountError(Exception):
 
 
 def download_captcha():
-    url = "https://www.zhihu.com/captcha.gif"
-    r = requests.get(url, params={"r": random.random(), "type": "login"}, verify=False)
+    # url = "https://www.zhihu.com/captcha.gif"
+    headers_base = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.8',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Connection': 'keep-alive',
+        'Host': 'www.zhihu.com',
+        'Origin': 'https://www.zhihu.com',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+        'Referer': 'http://www.zhihu.com/',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'X-Requested-With': 'XMLHttpRequest'
+    }
+    t = str(int(time.time() * 1000))
+    url = 'http://www.zhihu.com/captcha.gif?r=' + t + '&type=login'
+    print url
+    r = requests.get(url, verify=False,stream=True,headers = headers_base)
+    print r.status_code
     if int(r.status_code) != 200:
         raise NetworkError(u"验证码请求失败")
     image_name = u"verify." + r.headers['content-type'].split("/")[1]
@@ -96,13 +113,28 @@ def download_captcha():
 
 def search_xsrf():
     url = "http://www.zhihu.com/"
-    r = requests.get(url, verify=False)
+    headers = {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.8',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Connection': 'keep-alive',
+        'Host': 'www.zhihu.com',
+        'Origin': 'https://www.zhihu.com',
+        'Referer': 'http://www.zhihu.com/',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent':'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.23 Mobile Safari/537.36'
+    }
+    r = requests.get(url, headers = headers, verify=False)
+
     if int(r.status_code) != 200:
-        raise NetworkError(u"验证码请求失败")
+        raise NetworkError(u"验证码请求失败"),r.status_code
     results = re.compile(r"\<input\stype=\"hidden\"\sname=\"_xsrf\"\svalue=\"(\S+)\"", re.DOTALL).findall(r.text)
     if len(results) < 1:
         Logging.info(u"提取XSRF 代码失败" )
         return None
+    print results[0]
     return results[0]
 
 def build_form(account, password):
@@ -163,7 +195,15 @@ def upload_form(form):
 def islogin():
     # check session
     url = "https://www.zhihu.com/settings/profile"
-    r = requests.get(url, allow_redirects=False, verify=False)
+    headers = {
+        'User-Agent': "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36",
+        'Host': "www.zhihu.com",
+        'Origin': "http://www.zhihu.com",
+        'Pragma': "no-cache",
+        'Referer': "http://www.zhihu.com/",
+        'X-Requested-With': "XMLHttpRequest"
+    }
+    r = requests.get(url, allow_redirects=False, verify=False, headers = headers)
     status_code = int(r.status_code)
     if status_code == 301 or status_code == 302:
         # 未登录

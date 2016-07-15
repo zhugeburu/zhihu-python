@@ -33,7 +33,7 @@ def question_test(url):
     question = Question(url)
 
     # 获取该问题的标题
-    title = question.get_title()
+    # title = question.get_title()
     # 获取该问题的详细描述
     detail = question.get_detail()
     # 获取回答个数
@@ -51,7 +51,7 @@ def question_test(url):
     # 获取所有回答
     answers = question.get_all_answers()
 
-    print title  # 输出：现实可以有多美好？
+    # print title  # 输出：现实可以有多美好？
     print detail
     # 输出：
     # 本问题相对于“现实可以多残酷？传送门：现实可以有多残酷？
